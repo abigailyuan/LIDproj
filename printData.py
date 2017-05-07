@@ -7,8 +7,10 @@ from sklearn.dummy import DummyClassifier
 
 
 import collections
-
+#N grams
 N = 4
+#K first frequent Ngrams
+K = 10
 
 def countFile(filename):
     '''count number of instances for each language in the file'''
@@ -124,13 +126,29 @@ def averageWordLength(data):
     else:
         return 0
 
-##print("----------dev file--------------")
-##countFile('dev.json')
-##print("------------train file---------")
-##countFile('train.json')
-##text = getTextList('dev.json')
-##for i in text:
-##    print(i)
+def countLanguageNgrams(dataList):
+    langDict = {}
+    for instance in dataList:
+        NgramDict = {}
+        if(instance['lang'] not in langDict.keys()):
+            langDict[instance['lang']] = NgramDict
+        for Ngram in instance['text']:
+            if(Ngram not in langDict[instance['lang']].keys()):
+                langDict[instance['lang']][Ngram] = 1
+            else:
+                langDict[instance['lang']][Ngram] += 1
+    return langDict
+
+def toList(langDict, K):
+    langList = []
+    for key in langDict.keys():
+        (k, v) = (langDict[key], key)
+        langList.append((k, v))
+    langList = sorted(langList, reverse=True)[:K]
+    return langList
+        
+        
+
 print("----------parsed data-------------")
 dataList = parseText('dev.json')
 for i in dataList:
@@ -145,4 +163,9 @@ for i in dataList:
     i['awl'] = averageWordLength(i['text'])
     i['text'] = count_Ngrams(i['text'], N)
 dataList = removeEmptyString(dataList)
-print (dataList)
+#print(dataList)
+langDict = countLanguageNgrams(dataList)
+#print(langDict)
+for lang in langDict.keys():
+    langList = toList(langDict[lang], K)
+    print(langList)
