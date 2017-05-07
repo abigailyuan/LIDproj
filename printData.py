@@ -51,8 +51,13 @@ def readToList(filename):
     for instance in data:
         dataDict = {'lang': null, 'displayname': null, 'location': null, 'text': null}
         
-
-
+def removeSuffix(dataList):
+    for instance in dataList:
+        for word in instance['text']:
+            while(len(word) > 0 and word[-1] in '~`!@"#$%^&*()_+-={}|\[]:;<>?/,."'):
+                if(len(word) > 0):
+                    word = word[:-1]
+    return dataList
 
 
 
@@ -65,5 +70,6 @@ def readToList(filename):
 ##    print(i)
 print("----------parsed data-------------")
 dataList = parseText('dev.json')
+dataList = removeSuffix(dataList)
 for i in dataList:
-    print(i)
+    print(i['text'])
