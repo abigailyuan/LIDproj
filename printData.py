@@ -7,6 +7,7 @@ from pprint import pprint
 
 import collections
 
+N = 4
 
 def countFile(filename):
     '''count number of instances for each language in the file'''
@@ -51,7 +52,7 @@ def readToList(filename):
     json_data = open(filename)
     data = json.load(json_data)
     for instance in data:
-        dataDict = {'lang': null, 'displayname': null, 'location': null, 'text': null}
+        dataDict = {'lang': null, 'displayname': null, 'location': null, 'text': null, 'awl': 0}
         
 def removeSuffix(dataList):
     for instance in dataList:
@@ -94,7 +95,33 @@ def removeWord(word):
             word = word[:-1]
         else:
             break
-            
+
+def count_Ngrams(document, N):
+    """ count_trigrams takes a string and returns a dictionary of the counts 
+    of trigrams within the document. """
+    count_dict = dd(float)
+    i = 0
+    length = 1 - N
+    Ngrams = []
+    for word in document:
+        if(len(word) < N):
+            Ngrams.append(word)
+        else:
+            for i in range(0, len(word)-length):
+                Ngram = word[i:i+N]
+                if(Ngram not in Ngrams):
+                    Ngrams.append(Ngram)
+    
+    return Ngrams
+
+def averageWordLength(data):
+    length  = 0
+    for i in data:
+        length += len(i)
+    if(len(data) != 0):
+        return length / len(data)
+    else:
+        return 0
 
 ##print("----------dev file--------------")
 ##countFile('dev.json')
@@ -114,4 +141,7 @@ for i in dataList:
             if j != '':
                 buffer.append(j)
     i['text'] = buffer
+    i['awl'] = averageWordLength(i['text'])
+    i['text'] = count_Ngrams(i['text'], N)
+dataList = removeEmptyString(dataList)
 print (dataList)
