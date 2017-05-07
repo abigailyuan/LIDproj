@@ -3,6 +3,7 @@ import re
 import string
 from collections import defaultdict as dd
 from pprint import pprint
+from sklearn.dummy import DummyClassifier
 
 
 import collections
@@ -39,7 +40,7 @@ def parseText(filename):
     for item in data:
         text = item.get('text').split()
         item['text']= text
-        itemDict = {'lang': 'unknown', 'displayname': 'unknown', 'location': 'unknown', 'text':'unknown'}
+        itemDict = {'lang': 'unknown', 'displayname': 'unknown', 'location': 'unknown', 'text':'unknown', 'awl': 0}
         for key in item.keys():
             if(key != 'uid'):
                 itemDict[key] = item[key]
