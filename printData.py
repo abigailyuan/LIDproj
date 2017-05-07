@@ -53,13 +53,46 @@ def readToList(filename):
         
 def removeSuffix(dataList):
     for instance in dataList:
+        newList = []
         for word in instance['text']:
-            while(len(word) > 0 and word[-1] in '~`!@"#$%^&*()_+-={}|\[]:;<>?/,."'):
-                if(len(word) > 0):
+            while(len(word) > 0):
+                if(word[-1] in '~`!@"#$%^&*()_+-={ }|\[]:;<>?/,."'):
                     word = word[:-1]
+                else:
+                    newList.append(word)
+                    break
+        instance['text'] = newList
     return dataList
 
+def removePreffix(dataList):
+    for instance in dataList:
+        newList = []
+        for word in instance['text']:
+            while(len(word) > 0):
+                if(word[0] in '~`!@"#$%^&*()_ +-={}|\[]:;<>?/,."'):
+                    word = word[1:]
+                else:
+                    newList.append(word)
+                    break
+        instance['text'] = newList
+    return dataList
 
+def removeEmptyString(dataList):
+    for instance in dataList:
+        newList = []
+        for word in instance['text']:
+            if(len(word) > 0):
+                newList.append(word)
+        instance['text'] = newList
+    return dataList
+
+def removeWord(word):
+    while(len(word) > 0):
+        if(word[-1] in '~`!@"#$%^&*()_+-={}|\ []:;<>?/,."'):
+            word = word[:-1]
+        else:
+            break
+            
 
 ##print("----------dev file--------------")
 ##countFile('dev.json')
@@ -70,6 +103,10 @@ def removeSuffix(dataList):
 ##    print(i)
 print("----------parsed data-------------")
 dataList = parseText('dev.json')
+
 dataList = removeSuffix(dataList)
+dataList = removePreffix(dataList)
+dataList = removeEmptyString(dataList)
 for i in dataList:
     print(i['text'])
+#removeWord('abcd!)))')
