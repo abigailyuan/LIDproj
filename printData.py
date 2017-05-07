@@ -1,4 +1,6 @@
 import json
+import re
+import string
 from collections import defaultdict as dd
 from pprint import pprint
 
@@ -103,10 +105,13 @@ def removeWord(word):
 ##    print(i)
 print("----------parsed data-------------")
 dataList = parseText('dev.json')
-
-dataList = removeSuffix(dataList)
-dataList = removePreffix(dataList)
-dataList = removeEmptyString(dataList)
 for i in dataList:
-    print(i['text'])
-#removeWord('abcd!)))')
+    buffer = []
+    for j in i['text']:
+        if ('@' not in j) and ('#' not in j) and ('http' not in j):
+            j = re.sub('[%s]' % re.escape(string.punctuation),'',j)
+            j = re.sub('\d','',j)
+            if j != '':
+                buffer.append(j)
+    i['text'] = buffer
+print (dataList)
