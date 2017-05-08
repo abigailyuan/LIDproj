@@ -229,7 +229,7 @@ def createVector(Ngrams):
 
 def computerScores(train_data, vector):
     scores = []
-    print(vector)
+    #print(vector)
     for lang in train_data:
         score = 0
         for i in range(len(lang[:-1])):
@@ -311,6 +311,6 @@ print('N = '+str(N))
 print('K = '+str(K))
 print("num of ngrams: "+str(len(Ngramset)))
 print('----------------test----------------')
-scores = processTest('what are you talking about??? this is non sense.')
+scores = processTest("sahfbgldrskjgnfk,m .vxcbkxjglnsef;wDksnjfkbhxrosip4rL")
 for i in scores:
     print(i)
