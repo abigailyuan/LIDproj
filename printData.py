@@ -12,7 +12,7 @@ import collections
 N = 4
 #K first frequent Ngrams
 K = 5
-
+header = []
 
 def countFile(filename):
     '''count number of instances for each language in the file'''
@@ -170,10 +170,11 @@ def createPrototype(langDict):
 def createTrainData(ngramset, langDict):
     train_data = []
     #create header
-    header = []
+    #header = []
     for ngram in Ngramset:
         header.append(ngram)
     header.append('lang')
+    print(header)
     #train_data.append(header)
     for lang in langDict.keys():
         instance = []
@@ -197,7 +198,7 @@ def normaliseInstance(instance):
     #print(length)
     for i in range(len(instance)-1):
         instance[i] /= length
-    print(instance)
+    #print(instance)
     return instance
 
 def normaliseAll(train_data):
@@ -205,6 +206,63 @@ def normaliseAll(train_data):
         instance = normaliseInstance(instance)
     return train_data
 
+def createVector(Ngrams):
+    Ngramcount = {}
+    notInSet = {}
+    for i in header[:-1]:
+        if i not in Ngramcount.keys():
+            Ngramcount[i] = 0
+    for i in Ngrams:
+        if i in Ngramcount.keys():
+            Ngramcount[i] += 1
+        else:
+            if i in notInSet.keys():
+                notInSet[i] += 1
+            else:
+                notInSet[i] = 1
+    vector = []
+    for i in header[:-1]:
+        frequency = Ngramcount[i]
+        vector.append(frequency)
+        
+    return vector
+
+def computerScores(train_data, vector):
+    scores = []
+    print(vector)
+    for lang in train_data:
+        score = 0
+        for i in range(len(lang[:-1])):
+            score += lang[i] * vector[i]
+        scores.append((score, lang[-1]))
+    return sorted(scores, reverse=True)
+
+
+    
+def processTest(test):
+    #tokenize test data
+    test = test.split()
+
+    #clearify test data
+    buffer = []
+    for i in test:
+        if ('@' not in i) and ('#' not in i) and ('http' not in i):
+            i = re.sub('[%s]' % re.escape(string.punctuation),'',i)
+            i = re.sub('\d','',i)
+            if i != '':
+                buffer.append(i)
+    test = buffer
+
+    #create Ngrams
+    Ngrams = count_Ngrams(test, N)
+
+    #create vector for test
+    vector = createVector(Ngrams)
+
+    #compute scores for each language
+    scores = computerScores(train_data, vector)
+
+    return scores
 
 print("----------read and tokenize data-------------")
 dataList = parseText('dev.json')
@@ -236,7 +294,7 @@ Ngramset = set()
 for item in langNgramList:
     for ngram in item[:-1]:
         Ngramset.add(ngram[1])
-#print(Ngramset)
+print(Ngramset)
 print('             done')
 print('----create all dimensions for all prototypes----')
 #create train_data
@@ -252,3 +310,7 @@ print('--------------summary-----------------')
 print('N = '+str(N))
 print('K = '+str(K))
 print("num of ngrams: "+str(len(Ngramset)))
+print('----------------test----------------')
+scores = processTest('what are you talking about??? this is non sense.')
+for i in scores:
+    print(i)
