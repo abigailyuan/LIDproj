@@ -1,6 +1,7 @@
 import json
 import re
 import string
+import math
 from collections import defaultdict as dd
 from pprint import pprint
 from sklearn.dummy import DummyClassifier
@@ -10,7 +11,8 @@ import collections
 #N grams
 N = 4
 #K first frequent Ngrams
-K = 10
+K = 5
+
 
 def countFile(filename):
     '''count number of instances for each language in the file'''
@@ -35,6 +37,7 @@ def getTextList(filename):
         text = item.get('text').split()
         textList.append(text)
     return textList
+
 def parseText(filename):
     json_data = open(filename)
     data = json.load(json_data)
@@ -138,19 +141,75 @@ def countLanguageNgrams(dataList):
             else:
                 langDict[instance['lang']][Ngram] += 1
     return langDict
+#def fullDimensionLangDict(langDict):
+    
 
 def toList(langDict, K):
     langList = []
     for key in langDict.keys():
         (k, v) = (langDict[key], key)
         langList.append((k, v))
-    langList = sorted(langList, reverse=True)[:K]
+    if(K):
+        langList = sorted(langList, reverse=True)[:K]
+    else:
+        langList = sorted(langList, reverse=True)
     return langList
-        
-        
 
-print("----------parsed data-------------")
+    
+def createPrototype(langDict):
+    '''input a langDict and
+        return a list of [(frequency, ngram),...,(frequency, ngram), label]'''
+    langNgramList = []
+    #print(langDict)
+    for lang in langDict.keys():
+        langList = toList(langDict[lang], K)
+        langList.append(lang)
+        langNgramList.append(langList)
+    return langNgramList
+
+def createTrainData(ngramset, langDict):
+    train_data = []
+    #create header
+    header = []
+    for ngram in Ngramset:
+        header.append(ngram)
+    header.append('lang')
+    #train_data.append(header)
+    for lang in langDict.keys():
+        instance = []
+        for ngram in header[:-1]:
+            if ngram in langDict[lang].keys():
+                instance.append(langDict[lang][ngram])
+            else:
+                instance.append(0)
+        instance.append(lang)
+        train_data.append(instance)
+    return train_data
+
+def getInstanceLength(instance):
+    length = 0.0
+    for i in instance[:-1]:
+        length += (i*i)
+    return math.sqrt(length)
+
+def normaliseInstance(instance):
+    length = getInstanceLength(instance)
+    #print(length)
+    for i in range(len(instance)-1):
+        instance[i] /= length
+    print(instance)
+    return instance
+
+def normaliseAll(train_data):
+    for instance in train_data:
+        instance = normaliseInstance(instance)
+    return train_data
+
+
+print("----------read and tokenize data-------------")
 dataList = parseText('dev.json')
+print('             done')
+print('-----------count Ngrams----------------------')
 for i in dataList:
     buffer = []
     for j in i['text']:
@@ -163,9 +222,33 @@ for i in dataList:
     i['awl'] = averageWordLength(i['text'])
     i['text'] = count_Ngrams(i['text'], N)
 dataList = removeEmptyString(dataList)
+print('              done')
 #print(dataList)
+print('-------------create prototype---------------')
 langDict = countLanguageNgrams(dataList)
-#print(langDict)
-for lang in langDict.keys():
-    langList = toList(langDict[lang], K)
-    print(langList)
+langNgramList = createPrototype(langDict)
+print(langNgramList)
+print('              done')
+print('-------------create a set of all Ngrams------')
+
+#create a set of all K most frequent Ngrams in langlist
+Ngramset = set()
+for item in langNgramList:
+    for ngram in item[:-1]:
+        Ngramset.add(ngram[1])
+#print(Ngramset)
+print('             done')
+print('----create all dimensions for all prototypes----')
+#create train_data
+train_data = createTrainData(Ngramset, langDict)
+#print(train_data)
+print('             done')
+print('-------------------normalise train data-----------')
+train_data = normaliseAll(train_data)
+#print(train_data)
+        
+
+print('--------------summary-----------------')
+print('N = '+str(N))
+print('K = '+str(K))
+print("num of ngrams: "+str(len(Ngramset)))
