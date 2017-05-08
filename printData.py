@@ -11,32 +11,8 @@ import collections
 #N grams
 N = 4
 #K first frequent Ngrams
-K = 5
+K = 10
 header = []
-
-def countFile(filename):
-    '''count number of instances for each language in the file'''
-    json_data = open(filename)
-    data = json.load(json_data)
-    #print(data)
-    langDict = dd(int)
-    for item in data:
-        lang = item.get("lang")
-        langDict[lang] += 1
-    #print("-----------dev data-------------")
-    for key in langDict.keys():
-        print(key+": "+str(langDict[key]))
-    json_data.close()
-    return langDict
-
-def getTextList(filename):
-    json_data = open(filename)
-    data = json.load(json_data)
-    textList = []
-    for item in data:
-        text = item.get('text').split()
-        textList.append(text)
-    return textList
 
 def parseText(filename):
     json_data = open(filename)
@@ -60,32 +36,6 @@ def readToList(filename):
     for instance in data:
         dataDict = {'lang': null, 'displayname': null, 'location': null, 'text': null, 'awl': 0}
         
-def removeSuffix(dataList):
-    for instance in dataList:
-        newList = []
-        for word in instance['text']:
-            while(len(word) > 0):
-                if(word[-1] in '~`!@"#$%^&*()_+-={ }|\[]:;<>?/,."'):
-                    word = word[:-1]
-                else:
-                    newList.append(word)
-                    break
-        instance['text'] = newList
-    return dataList
-
-def removePreffix(dataList):
-    for instance in dataList:
-        newList = []
-        for word in instance['text']:
-            while(len(word) > 0):
-                if(word[0] in '~`!@"#$%^&*()_ +-={}|\[]:;<>?/,."'):
-                    word = word[1:]
-                else:
-                    newList.append(word)
-                    break
-        instance['text'] = newList
-    return dataList
-
 def removeEmptyString(dataList):
     for instance in dataList:
         newList = []
@@ -94,13 +44,6 @@ def removeEmptyString(dataList):
                 newList.append(word)
         instance['text'] = newList
     return dataList
-
-def removeWord(word):
-    while(len(word) > 0):
-        if(word[-1] in '~`!@"#$%^&*()_+-={}|\ []:;<>?/,."'):
-            word = word[:-1]
-        else:
-            break
 
 def count_Ngrams(document, N):
     """ count_trigrams takes a string and returns a dictionary of the counts 
@@ -141,7 +84,7 @@ def countLanguageNgrams(dataList):
             else:
                 langDict[instance['lang']][Ngram] += 1
     return langDict
-#def fullDimensionLangDict(langDict):
+
     
 
 def toList(langDict, K):
@@ -169,13 +112,9 @@ def createPrototype(langDict):
 
 def createTrainData(ngramset, langDict):
     train_data = []
-    #create header
-    #header = []
     for ngram in Ngramset:
         header.append(ngram)
     header.append('lang')
-    print(header)
-    #train_data.append(header)
     for lang in langDict.keys():
         instance = []
         for ngram in header[:-1]:
@@ -195,10 +134,8 @@ def getInstanceLength(instance):
 
 def normaliseInstance(instance):
     length = getInstanceLength(instance)
-    #print(length)
     for i in range(len(instance)-1):
         instance[i] /= length
-    #print(instance)
     return instance
 
 def normaliseAll(train_data):
@@ -229,7 +166,6 @@ def createVector(Ngrams):
 
 def computerScores(train_data, vector):
     scores = []
-    #print(vector)
     for lang in train_data:
         score = 0
         for i in range(len(lang[:-1])):
@@ -264,10 +200,9 @@ def processTest(test):
 
     return scores
 
-print("----------read and tokenize data-------------")
+#print("----------read and tokenize data-------------")
 dataList = parseText('dev.json')
-print('             done')
-print('-----------count Ngrams----------------------')
+#print('-----------count Ngrams----------------------')
 for i in dataList:
     buffer = []
     for j in i['text']:
@@ -280,37 +215,33 @@ for i in dataList:
     i['awl'] = averageWordLength(i['text'])
     i['text'] = count_Ngrams(i['text'], N)
 dataList = removeEmptyString(dataList)
-print('              done')
-#print(dataList)
-print('-------------create prototype---------------')
+
+#print('-------------create prototype---------------')
 langDict = countLanguageNgrams(dataList)
 langNgramList = createPrototype(langDict)
-print(langNgramList)
-print('              done')
-print('-------------create a set of all Ngrams------')
+
+#print('-------------create a set of all Ngrams------')
 
 #create a set of all K most frequent Ngrams in langlist
 Ngramset = set()
 for item in langNgramList:
     for ngram in item[:-1]:
         Ngramset.add(ngram[1])
-print(Ngramset)
-print('             done')
-print('----create all dimensions for all prototypes----')
+
+#print('----create all dimensions for all prototypes----')
 #create train_data
 train_data = createTrainData(Ngramset, langDict)
-#print(train_data)
-print('             done')
-print('-------------------normalise train data-----------')
-train_data = normaliseAll(train_data)
-#print(train_data)
-        
 
-print('--------------summary-----------------')
-print('N = '+str(N))
-print('K = '+str(K))
-print("num of ngrams: "+str(len(Ngramset)))
-print('----------------test----------------')
-scores = processTest("sahfbgldrskjgnfk,m .vxcbkxjglnsef;wDksnjfkbhxrosip4rL")
-for i in scores:
-    print(i)
+#print('-------------------normalise train data-----------')
+train_data = normaliseAll(train_data)
+
+        
+##
+##print('--------------summary-----------------')
+##print('N = '+str(N))
+##print('K = '+str(K))
+##print("num of ngrams: "+str(len(Ngramset)))
+##print('----------------test----------------')
+test = input('enter the text for testing:\n')
+scores = processTest(test)
+print('prediction: '+scores[0][1])
