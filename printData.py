@@ -95,8 +95,7 @@ def toList(langDict, K):
         (k, v) = (langDict[key], key)
         langList.append((k, v))
     if(K):
-        print('sort start')
-        ind = [numpy.argpartition([freq for (freq, lang) in langList], -K)][-K:]
+        ind = numpy.argpartition([freq for (freq, lang) in langList], -K)[-K:]
         langList = sorted([langList[i] for i in ind])###########
     else:
         langList = sorted(langList, reverse=True)
