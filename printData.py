@@ -5,6 +5,7 @@ import math
 from collections import defaultdict as dd
 from pprint import pprint
 from sklearn.dummy import DummyClassifier
+import numpy
 
 
 import collections
@@ -48,20 +49,21 @@ def removeEmptyString(dataList):
 def count_Ngrams(document, N):
     """ count_trigrams takes a string and returns a dictionary of the counts 
     of trigrams within the document. """
-    count_dict = dd(float)
-    i = 0
-    length = 1 - N
-    Ngrams = []
-    for word in document:
-        if(len(word) < N):
-            Ngrams.append(word)
-        else:
-            for i in range(0, len(word)-length):
-                Ngram = word[i:i+N]
-                if(Ngram not in Ngrams):
-                    Ngrams.append(Ngram)
+##    count_dict = dd(float)
+##    i = 0
+##    length = 1 - N
+##    Ngrams = []
+##    for word in document:
+##        if(len(word) < N):
+##            Ngrams.append(word)
+##        else:
+##            for i in range(0, len(word)-length):
+##                Ngram = word[i:i+N]
+##                if(Ngram not in Ngrams):
+##                    Ngrams.append(Ngram)
+    return zip(*[document[i:] for i in range(N)])
     
-    return Ngrams
+    #return Ngrams
 
 def averageWordLength(data):
     length  = 0
@@ -93,7 +95,9 @@ def toList(langDict, K):
         (k, v) = (langDict[key], key)
         langList.append((k, v))
     if(K):
-        langList = sorted(langList, reverse=True)[:K]
+        print('sort start')
+        ind = [numpy.argpartition([freq for (freq, lang) in langList], -K)][-K:]
+        langList = sorted([langList[i] for i in ind])###########
     else:
         langList = sorted(langList, reverse=True)
     return langList
@@ -200,9 +204,9 @@ def processTest(test):
 
     return scores
 
-#print("----------read and tokenize data-------------")
-dataList = parseText('dev.json')
-#print('-----------count Ngrams----------------------')
+print("----------read and tokenize data-------------")
+dataList = parseText('train.json')
+print('-----------count Ngrams----------------------')
 for i in dataList:
     buffer = []
     for j in i['text']:
@@ -212,15 +216,16 @@ for i in dataList:
             if j != '':
                 buffer.append(j)
     i['text'] = buffer
-    i['awl'] = averageWordLength(i['text'])
+    #i['awl'] = averageWordLength(i['text'])
     i['text'] = count_Ngrams(i['text'], N)
+    print('counted '+i['lang'])
 dataList = removeEmptyString(dataList)
 
-#print('-------------create prototype---------------')
+print('-------------create prototype---------------')
 langDict = countLanguageNgrams(dataList)
 langNgramList = createPrototype(langDict)
 
-#print('-------------create a set of all Ngrams------')
+print('-------------create a set of all Ngrams------')
 
 #create a set of all K most frequent Ngrams in langlist
 Ngramset = set()
@@ -228,11 +233,11 @@ for item in langNgramList:
     for ngram in item[:-1]:
         Ngramset.add(ngram[1])
 
-#print('----create all dimensions for all prototypes----')
+print('----create all dimensions for all prototypes----')
 #create train_data
 train_data = createTrainData(Ngramset, langDict)
 
-#print('-------------------normalise train data-----------')
+print('-------------------normalise train data-----------')
 train_data = normaliseAll(train_data)
 
         
