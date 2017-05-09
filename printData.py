@@ -246,6 +246,12 @@ train_data = normaliseAll(train_data)
 ##print('K = '+str(K))
 ##print("num of ngrams: "+str(len(Ngramset)))
 ##print('----------------test----------------')
-test = input('enter the text for testing:\n')
-scores = processTest(test)
-print('prediction: '+scores[0][1])
+flag = True
+while(flag):
+    test = input('enter the text for testing:\n')
+    if(test == 'quit'):
+        flag = False
+        break
+    scores = processTest(test)
+    print('prediction: '+scores[0][1])
+    print('---------------------------------------')
