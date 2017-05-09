@@ -49,21 +49,8 @@ def removeEmptyString(dataList):
 def count_Ngrams(document, N):
     """ count_trigrams takes a string and returns a dictionary of the counts 
     of trigrams within the document. """
-##    count_dict = dd(float)
-##    i = 0
-##    length = 1 - N
-##    Ngrams = []
-##    for word in document:
-##        if(len(word) < N):
-##            Ngrams.append(word)
-##        else:
-##            for i in range(0, len(word)-length):
-##                Ngram = word[i:i+N]
-##                if(Ngram not in Ngrams):
-##                    Ngrams.append(Ngram)
     return zip(*[document[i:] for i in range(N)])
-    
-    #return Ngrams
+
 
 def averageWordLength(data):
     length  = 0
@@ -203,6 +190,21 @@ def processTest(test):
 
     return scores
 
+def doTest(filename):
+    json_data = open(filename)
+    data = json.load(json_data)
+    numOfTest = 0
+    numOfCorrect = 0
+    for item in data:
+        numOfTest += 1
+        prediction = processTest(item['text'])[0][1]
+        if(prediction == item['lang']):
+           numOfCorrect += 1
+    accuracy = float(numOfTest) / numOfTest
+    print('numOfTest = '+str(numOfTest))
+    print('numOfCorrect = '+str(numOfCorrect))
+    print('accuracy = '+str(accuracy))
+
 print("----------read and tokenize data-------------")
 dataList = parseText('train.json')
 print('-----------count Ngrams----------------------')
@@ -245,13 +247,14 @@ train_data = normaliseAll(train_data)
 ##print('N = '+str(N))
 ##print('K = '+str(K))
 ##print("num of ngrams: "+str(len(Ngramset)))
-##print('----------------test----------------')
-flag = True
-while(flag):
-    test = input('enter the text for testing:\n')
-    if(test == 'quit'):
-        flag = False
-        break
-    scores = processTest(test)
-    print('prediction: '+scores[0][1])
-    print('---------------------------------------')
+print('----------------test----------------')
+##flag = True
+##while(flag):
+##    test = input('enter the text for testing:\n')
+##    if(test == 'quit'):
+##        flag = False
+##        break
+##    scores = processTest(test)
+##    print('prediction: '+scores[0][1])
+##    print('---------------------------------------')
+doTest('testLabel.json')
