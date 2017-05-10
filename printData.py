@@ -10,9 +10,9 @@ import numpy
 
 import collections
 #N grams
-N = 4
+N = 3
 #K first frequent Ngrams
-K = 10
+K = 26
 header = []
 
 def parseText(filename):
@@ -49,7 +49,10 @@ def removeEmptyString(dataList):
 def count_Ngrams(document, N):
     """ count_trigrams takes a string and returns a dictionary of the counts 
     of trigrams within the document. """
-    return zip(*[document[i:] for i in range(N)])
+    Ngrams = zip(*[document[i:] for i in range(1, N)])
+    for i in range(2, N+1):
+        Ngrams += zip(*[document[i:] for i in range(i)])
+    return Ngrams
 
 
 def averageWordLength(data):
@@ -197,16 +200,16 @@ def doTest(filename):
     numOfCorrect = 0
     for item in data:
         numOfTest += 1
-        prediction = processTest(item['text'])[0][1]
+        prediction = processTest(item['text'])[0][1]#####TODO
         if(prediction == item['lang']):
            numOfCorrect += 1
-    accuracy = float(numOfTest) / numOfTest
+    accuracy = float(numOfCorrect) / numOfTest
     print('numOfTest = '+str(numOfTest))
     print('numOfCorrect = '+str(numOfCorrect))
     print('accuracy = '+str(accuracy))
 
 print("----------read and tokenize data-------------")
-dataList = parseText('train.json')
+dataList = parseText('dev.json')
 print('-----------count Ngrams----------------------')
 for i in dataList:
     buffer = []
@@ -219,7 +222,7 @@ for i in dataList:
     i['text'] = buffer
     #i['awl'] = averageWordLength(i['text'])
     i['text'] = count_Ngrams(i['text'], N)
-    print('counted '+i['lang'])
+    #print('counted '+i['lang'])
 dataList = removeEmptyString(dataList)
 
 print('-------------create prototype---------------')
