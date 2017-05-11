@@ -15,6 +15,6 @@ def createFile(filename):
             f.write(text)
         print('finished one file')
         f.close()
+    return data_dict
 
-createFile('trainfile.json')
             
