@@ -22,6 +22,10 @@ for line in fp:
     instance = json.loads(line)
     target.append(instance['lang'])
     data.append(instance['text'])
+##    if 'location' in instance.keys():
+##        data.append(instance['text']+instance['location'])
+##    else:
+##        data.append(instance['text']+'unknown')
 
 fp1 = open('testfile.json')
 
@@ -29,6 +33,10 @@ for line in fp1:
     instance = json.loads(line)
     target.append(instance['lang'])
     data.append(instance['text'])
+##    if 'location' in instance.keys():
+##        data.append(instance['text']+instance['location'])
+##    else:
+##        data.append(instance['text']+'unknown')
 
 categories = {'ar': 1,
               'bg': 2,
@@ -51,6 +59,7 @@ categories = {'ar': 1,
               'ur': 19,
               'zh': 20,
               'unk': 21}
+
 target = np.array(target)
 for i in range(len(target)):
     target[i] = categories[target[i]]
@@ -59,7 +68,7 @@ data = np.array(data)
 fp.close()
 fp1.close()
 hv = HashingVectorizer(n_features=2000, token_pattern=r'\b\w+\b',ngram_range=(1,5), analyzer='char_wb')
-X = hv.transform(data).toarray()
+X = hv.transform(data.ravel()).toarray()
 transformer = TfidfTransformer(smooth_idf=False)
 X2 = transformer.fit_transform(X).toarray()
 ########################classifier starts now###################
