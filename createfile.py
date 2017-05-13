@@ -21,22 +21,22 @@ target = []
 for line in fp:
     instance = json.loads(line)
     target.append(instance['lang'])
-    data.append(instance['text'])
-##    if 'location' in instance.keys():
-##        data.append(instance['text']+instance['location'])
-##    else:
-##        data.append(instance['text']+'unknown')
+##    data.append(instance['text'])
+    if 'location' in instance.keys():
+        data.append(instance['text']+instance['location'])
+    else:
+        data.append(instance['text']+'unknown')
 
 fp1 = open('testfile.json')
 
 for line in fp1:
     instance = json.loads(line)
     target.append(instance['lang'])
-    data.append(instance['text'])
-##    if 'location' in instance.keys():
-##        data.append(instance['text']+instance['location'])
-##    else:
-##        data.append(instance['text']+'unknown')
+##    data.append(instance['text'])
+    if 'location' in instance.keys():
+        data.append(instance['text']+instance['location'])
+    else:
+        data.append(instance['text']+'unknown')
 
 categories = {'ar': 1,
               'bg': 2,
