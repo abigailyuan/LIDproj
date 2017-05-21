@@ -1,4 +1,5 @@
 import json
+import csv
 import numpy as np
 import re
 import string
@@ -7,6 +8,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.feature_extraction.text import TfidfTransformer
 from sklearn.feature_extraction.text import HashingVectorizer
+from sklearn.ensemble import BaggingClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.decomposition import PCA
@@ -22,11 +25,16 @@ fp = open('devfile.json')
 data = []
 target = []
 
+
 '''
 clean text by removing punctuatuations and numbers, removing instance
 whose text is too short, and convert all texts to lowercase
 '''
+timeout = 20000
+current_num = 0
 for line in fp:
+    current_num+=1
+    
     filtered_text = []
     instance = json.loads(line)
     word_list = instance['text'].split()
@@ -43,7 +51,8 @@ for line in fp:
         else:
             data.append(instance['text']+'unknown')
         target.append(instance['lang'])
-  
+    if current_num == timeout:
+        break
 
 train_length = len(data)
 
@@ -88,6 +97,27 @@ categories = {'ar': 1,
               'ur': 19,
               'zh': 20,
               'unk': 21}
+categories_reverse = {'1': 'ar',
+                      '2': 'bg',
+                      '3': 'de',
+                      '4': 'en',
+                      '5': 'es',
+                      '6': 'fa',
+                      '7': 'fr',
+                      '8': 'he',
+                      '9': 'hi',
+                      '10': 'it',
+                      '11': 'ja',
+                      '12': 'ko',
+                      '13': 'mr',
+                      '14': 'ne',
+                      '15': 'nl',
+                      '16': 'ru',
+                      '17': 'th',
+                      '18': 'uk',
+                      '19': 'ur',
+                      '20': 'zh',
+                      '21': 'unk'}
 target = np.array(target)
 for i in range(len(target)):
     target[i] = categories[target[i]]
@@ -95,32 +125,70 @@ for i in range(len(target)):
 data = np.array(data)
 fp.close()
 fp1.close()
-hv = HashingVectorizer(n_features=1500, token_pattern=r'\b\w+\b',ngram_range=(2,2), analyzer='char_wb')
+hv = HashingVectorizer(n_features=40000, token_pattern=r'\b\w+\b',ngram_range=(1,6), analyzer='char_wb')
 X = hv.transform(data).toarray()
-transformer = TfidfTransformer(smooth_idf=False)
+transformer = TfidfTransformer(smooth_idf=True)
 X2 = transformer.fit_transform(X).toarray()
-########################classifier starts now###################
-'''GaussianNB'''
-clf1 = GaussianNB()
-clf1.fit(X2[:train_length], target[:train_length])
-score = clf1.score(X2[train_length:], target[train_length:])
-print('NB score = '+str(score))
+######################classifier starts now###################
+##'''GaussianNB'''
+##clf1 = GaussianNB()
+##clf1.fit(X2[:train_length], target[:train_length])
+##score = clf1.score(X2[train_length:], target[train_length:])
+##print('NB score = '+str(score))
+##
+##'''Decision tree'''
+##one_r = DecisionTreeClassifier()
+##one_r.fit(X2[:train_length], target[:train_length])
+##score = one_r.score(X2[train_length:], target[train_length:])
+##print('Decision tree score = '+str(score))
+##
+##'''SVM'''
+##clf2 = svm.LinearSVC()
+##clf2.fit(X2[:train_length], target[:train_length])
+##score = clf2.score(X2[train_length:], target[train_length:])
 
-'''Decision tree'''
-one_r = DecisionTreeClassifier()
-one_r.fit(X2[:train_length], target[:train_length])
-score = one_r.score(X2[train_length:], target[train_length:])
-print('Decision tree score = '+str(score))
-
-'''SVM'''
-clf2 = svm.LinearSVC()
-clf2.fit(X2[:train_length], target[:train_length])
-score = clf2.score(X2[train_length:], target[train_length:])
-print('SVM score = '+str(score))
-
-
-
-
+'''Bagging'''
+bagging = BaggingClassifier(KNeighborsClassifier(), max_samples=0.5, max_features=0.5)
+bagging.fit(X2[:train_length], target[:train_length])
+score = bagging.score(X2[train_length:], target[train_length:])
+print('bagging score = '+str(score))
+##print('start to predict.....')
+##y = bagging.predict(X2[train_length:])
+##print('start to write file.....')
+####print('SVM score = '+str(score))
+##id = 0
+##data_2d = []
+##data_2d.append(['docid','lang'])
+##fp3 = open('submit.csv', 'w')
+##for i in y:
+##    print('a')
+##    idstr = ''
+##    if id / 10 < 1:
+##        idstr = '000'+ str(id)
+##    elif id / 10 <10:
+##        idstr = '00' + str(id)
+##    elif id / 10 <100:
+##        idstr = '0' + str(id)
+##    elif id / 10 < 1000:
+##        idstr = str(id)
+##    instance = ['test'+idstr, categories_reverse[i]]
+##    data_2d.append(instance)
+##    id += 1
+##writer = csv.writer(fp3)
+##print('start to write rows.....')
+##writer.writerows(data_2d)
+##fp3.close()
+##i=2
+##while(i<30):
+##    hv = HashingVectorizer(n_features=1500, token_pattern=r'\b\w+\b',ngram_range=(2,i), analyzer='char_wb')
+##    X = hv.transform(data).toarray()
+##    transformer = TfidfTransformer(smooth_idf=False)
+##    X2 = transformer.fit_transform(X).toarray()
+##    clf1 = GaussianNB()
+##    clf1.fit(X2[:train_length], target[:train_length])
+##    score = clf1.score(X2[train_length:], target[train_length:])
+##    print('range = '+str(i)+'NB score = '+str(score))
+##    i+=1
 
 
 
