@@ -21,7 +21,7 @@ from sklearn import svm
 
 ######################preprocessing####################
 
-fp = open('devfile.json')
+fp = open('train.json')
 data = []
 target = []
 
@@ -56,7 +56,7 @@ for line in fp:
 
 train_length = len(data)
 
-fp1 = open('testfile.json')
+fp1 = open('test.json')
 for line in fp1:
     filtered_text = []
     instance = json.loads(line)
@@ -142,42 +142,47 @@ X2 = transformer.fit_transform(X).toarray()
 ##score = one_r.score(X2[train_length:], target[train_length:])
 ##print('Decision tree score = '+str(score))
 ##
-##'''SVM'''
-##clf2 = svm.LinearSVC()
-##clf2.fit(X2[:train_length], target[:train_length])
+'''SVM'''
+clf2 = svm.LinearSVC()
+clf2.fit(X2[:train_length], target[:train_length])
 ##score = clf2.score(X2[train_length:], target[train_length:])
+##
+##'''Bagging'''
+##bagging = BaggingClassifier(KNeighborsClassifier(), max_samples=0.5, max_features=0.5)
+##bagging.fit(X2[:train_length], target[:train_length])
+##score = bagging.score(X2[train_length:], target[train_length:])
+##print('bagging score = '+str(score))
 
-'''Bagging'''
-bagging = BaggingClassifier(KNeighborsClassifier(), max_samples=0.5, max_features=0.5)
-bagging.fit(X2[:train_length], target[:train_length])
-score = bagging.score(X2[train_length:], target[train_length:])
-print('bagging score = '+str(score))
-##print('start to predict.....')
+
+print('start to predict.....')
+y = clf2.predict(X2[train_length:])
+##y = clf1.predict(X2[train_length:])
+##y = oner.predict(X2[train_length:])
 ##y = bagging.predict(X2[train_length:])
-##print('start to write file.....')
-####print('SVM score = '+str(score))
-##id = 0
-##data_2d = []
-##data_2d.append(['docid','lang'])
-##fp3 = open('submit.csv', 'w')
-##for i in y:
-##    print('a')
-##    idstr = ''
-##    if id / 10 < 1:
-##        idstr = '000'+ str(id)
-##    elif id / 10 <10:
-##        idstr = '00' + str(id)
-##    elif id / 10 <100:
-##        idstr = '0' + str(id)
-##    elif id / 10 < 1000:
-##        idstr = str(id)
-##    instance = ['test'+idstr, categories_reverse[i]]
-##    data_2d.append(instance)
-##    id += 1
-##writer = csv.writer(fp3)
-##print('start to write rows.....')
-##writer.writerows(data_2d)
-##fp3.close()
+
+print('start to write file.....')
+id = 0
+data_2d = []
+data_2d.append(['docid','lang'])
+fp3 = open('submit.csv', 'w')
+for i in y:
+    print('a')
+    idstr = ''
+    if id / 10 < 1:
+        idstr = '000'+ str(id)
+    elif id / 10 <10:
+        idstr = '00' + str(id)
+    elif id / 10 <100:
+        idstr = '0' + str(id)
+    elif id / 10 < 1000:
+        idstr = str(id)
+    instance = ['test'+idstr, categories_reverse[i]]
+    data_2d.append(instance)
+    id += 1
+writer = csv.writer(fp3)
+print('start to write rows.....')
+writer.writerows(data_2d)
+fp3.close()
 ##i=2
 ##while(i<30):
 ##    hv = HashingVectorizer(n_features=1500, token_pattern=r'\b\w+\b',ngram_range=(2,i), analyzer='char_wb')
